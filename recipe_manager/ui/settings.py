@@ -32,13 +32,15 @@ class SettingsMenu(QFrame):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(10, 10, 10, 10)
         layout.setSpacing(8)
+        layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         
         # ------ Scale slider ------ # 
         scale_lable = QLabel("UI Scale ")
+        self.scaler.register_widget(scale_lable, font_size=14)
         layout.addWidget(scale_lable)
 
         self.scale_slider = QSlider(Qt.Orientation.Horizontal)
-        self.scale_slider.setRange(50, 200)
+        self.scale_slider.setRange(75, 150)
         self.scale_slider.setValue(int(self.scaler.global_scale() * 100))
         layout.addWidget(self.scale_slider)
 

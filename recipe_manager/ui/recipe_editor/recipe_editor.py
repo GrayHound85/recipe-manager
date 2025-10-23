@@ -81,7 +81,8 @@ class RecipeEditor(QWidget):
         layout.setSpacing(5)
 
         title = QLabel("Orange Macrons")
-        title.setStyleSheet("color: white; font-size: 18px;")
+        title.setStyleSheet("color: white;")
+        self.scaler.register_widget(title, font_size=18)
         layout.addWidget(title)
         layout.addStretch()
 
@@ -100,7 +101,7 @@ class RecipeEditor(QWidget):
             parent_pos = self.mapFromGlobal(button_pos)
 
             x = parent_pos.x() - self.settings_menu.width()
-            y = parent_pos.y() + 4  # small margin
+            y = parent_pos.y() - 20
 
             self.settings_menu.move(x, y)
             self.settings_menu.raise_()
@@ -118,15 +119,16 @@ class RecipeEditor(QWidget):
         button_pos = self.settings_button.mapToGlobal(self.settings_button.rect().bottomRight())
         parent_pos = self.mapFromGlobal(button_pos)
         x = parent_pos.x() - self.settings_menu.width()
-        y = parent_pos.y() + 4
+        y = parent_pos.y() - 20
         self.settings_menu.move(x, y)
+        self.settings_button.raise_()
 
     
     # ------ Sidebar ------ #
     def _create_sidebar(self):
         sidebar = QFrame()
         sidebar.setObjectName("Sidebar")
-        self.scaler.register_widget(sidebar, width=150, height=None)
+        self.scaler.register_widget(sidebar, width=250, height=None)
         sidebar.setStyleSheet("""
             QFrame#Sidebar {
                 background-color: #383838;
