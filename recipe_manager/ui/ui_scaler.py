@@ -2,6 +2,10 @@ import sys
 from PyQt6.QtWidgets import QApplication
 from PyQt6.QtCore import QObject, pyqtSignal, QTimer
 
+class _ScalerSignnls(QObject):
+    scale_changed = pyqtSignal()
+    
+
 class Scaler:
     _instance = None
 
@@ -15,19 +19,24 @@ class Scaler:
         if getattr(self, "_initialized", False):
             return
         self.reference_dpi = reference_dpi
-        self.user_scale = 1
+        self.__user_scale = 1
         self.device_scale = 1
-        self._widgets = []  # registry of widgets
+        self._widgets = []
+        self.signals = _ScalerSignnls()
         self._initialized = True
+  
+
+    def set_user_scale(self, value):
+        self.__user_scale = value
+        self.update_all()
 
     def global_scale(self):
-        return self.device_scale * self.user_scale
+        return self.device_scale * self.__user_scale
 
     def scale_value(self, value):
         return int(value * self.global_scale())
 
     def register_widget(self, widget, width=None, height=None, font_size=None):
-        """Register widget for automatic scaling."""
         self._widgets.append((widget, width, height, font_size))
         self.apply(widget, width, height, font_size)
 
@@ -40,7 +49,7 @@ class Scaler:
             widget.setFont(f)
 
     def update_all(self):
-        """Call when user changes scale."""
         for w, width, height, font_size in self._widgets:
             self.apply(w, width, height, font_size)
+
 

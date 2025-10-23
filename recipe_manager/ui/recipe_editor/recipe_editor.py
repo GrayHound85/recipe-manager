@@ -2,10 +2,11 @@ from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
     QScrollArea, QFrame, QSizePolicy
 )
-from PyQt6.QtCore import Qt, pyqtSignal
+from PyQt6.QtCore import Qt, pyqtSignal, QPoint
 from PyQt6.QtGui import QFont
 
 from ui.ui_scaler import Scaler
+from ui.settings import SettingsMenu, SettingsButton
 
 class RecipeEditor(QWidget):
     backendRequested = pyqtSignal()
@@ -64,6 +65,7 @@ class RecipeEditor(QWidget):
     # ------------------------------------------------------------------- #
     #                         UI Components
     # ------------------------------------------------------------------- #
+    # ------ Top bar ------ #
     def _create_topbar(self):
         bar = QFrame()
         bar.setObjectName("TopBar")
@@ -74,9 +76,53 @@ class RecipeEditor(QWidget):
             }
         """)
 
+        layout = QHBoxLayout(bar)
+        layout.setContentsMargins(10, 0, 10, 0)
+        layout.setSpacing(5)
+
+        title = QLabel("Orange Macrons")
+        title.setStyleSheet("color: white; font-size: 18px;")
+        layout.addWidget(title)
+        layout.addStretch()
+
+        # ------ Settings menu ------ #
+        self.settings_menu = SettingsMenu(self)
+        self.settings_button = SettingsButton(self.settings_menu, parent=bar)
+        layout.addWidget(self.settings_button)
+
+        def toggle_menu():
+            if self.settings_menu.isVisible():
+                self.settings_menu.hide()
+                return
+
+            # Get position of button relative to main window
+            button_pos = self.settings_button.mapToGlobal(self.settings_button.rect().bottomRight())
+            parent_pos = self.mapFromGlobal(button_pos)
+
+            x = parent_pos.x() - self.settings_menu.width()
+            y = parent_pos.y() + 4  # small margin
+
+            self.settings_menu.move(x, y)
+            self.settings_menu.raise_()
+            self.settings_menu.show()
+
+        self.scaler.signals.scale_changed.connect(self.reposition_settings_menu)
+        self.settings_button.clicked.connect(toggle_menu)
+
         return bar
     
+    def reposition_settings_menu(self):
+        if not self.settings_menu.isVisible():
+            return
 
+        button_pos = self.settings_button.mapToGlobal(self.settings_button.rect().bottomRight())
+        parent_pos = self.mapFromGlobal(button_pos)
+        x = parent_pos.x() - self.settings_menu.width()
+        y = parent_pos.y() + 4
+        self.settings_menu.move(x, y)
+
+    
+    # ------ Sidebar ------ #
     def _create_sidebar(self):
         sidebar = QFrame()
         sidebar.setObjectName("Sidebar")
