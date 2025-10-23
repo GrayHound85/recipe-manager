@@ -96,12 +96,9 @@ class RecipeEditor(QWidget):
                 self.settings_menu.hide()
                 return
 
-            # Get position of button relative to main window
-            button_pos = self.settings_button.mapToGlobal(self.settings_button.rect().bottomRight())
-            parent_pos = self.mapFromGlobal(button_pos)
-
-            x = parent_pos.x() - self.settings_menu.width()
-            y = parent_pos.y() - 20
+            # Anchor to top-right corner of parent window
+            x = self.width() - self.settings_menu.width() - 10  # 10px padding from right
+            y = 10  # 10px padding from top
 
             self.settings_menu.move(x, y)
             self.settings_menu.raise_()
@@ -109,6 +106,7 @@ class RecipeEditor(QWidget):
 
         self.scaler.signals.scale_changed.connect(self.reposition_settings_menu)
         self.settings_button.clicked.connect(toggle_menu)
+        self.settings_menu.toggle_requested.connect(toggle_menu)
 
         return bar
     
@@ -116,12 +114,11 @@ class RecipeEditor(QWidget):
         if not self.settings_menu.isVisible():
             return
 
-        button_pos = self.settings_button.mapToGlobal(self.settings_button.rect().bottomRight())
-        parent_pos = self.mapFromGlobal(button_pos)
-        x = parent_pos.x() - self.settings_menu.width()
-        y = parent_pos.y() - 20
+        # Keep anchored to top-right of main window
+        x = self.width() - self.settings_menu.width() - 10
+        y = 10
         self.settings_menu.move(x, y)
-        self.settings_button.raise_()
+        self.settings_menu.raise_()
 
     
     # ------ Sidebar ------ #

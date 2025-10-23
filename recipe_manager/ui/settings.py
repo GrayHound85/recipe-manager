@@ -1,10 +1,12 @@
-from PyQt6.QtWidgets import QFrame, QVBoxLayout, QSlider, QLabel, QPushButton
-from PyQt6.QtCore import Qt, QSize
+from PyQt6.QtWidgets import QFrame, QVBoxLayout, QHBoxLayout, QSlider, QLabel, QPushButton
+from PyQt6.QtCore import Qt, QSize, pyqtSignal
 from PyQt6.QtGui import QFont, QIcon
 
 from ui.ui_scaler import Scaler
 
 class SettingsMenu(QFrame):
+    toggle_requested = pyqtSignal()
+
     def __init__(self, parent=None):
         super().__init__(parent)
         self.scaler = Scaler()
@@ -33,11 +35,29 @@ class SettingsMenu(QFrame):
         layout.setContentsMargins(10, 10, 10, 10)
         layout.setSpacing(8)
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+
+        # ------ Settings header + close button ------ #
+        hbox1 = QHBoxLayout()
+        layout.addLayout(hbox1)
+        settings_header = QLabel("Settings")
+        self.scaler.register_widget(settings_header, font_size=18)
+        hbox1.addWidget(settings_header)
+        self.close_button = SettingsButton(self)
+        hbox1.addWidget(self.close_button)
+        self.close_button.clicked.connect(self.toggle_requested.emit)
         
         # ------ Scale slider ------ # 
+        hbox2 = QHBoxLayout()
+        layout.addLayout(hbox2)
         scale_lable = QLabel("UI Scale ")
+        hbox2.addWidget(scale_lable, alignment=Qt.AlignmentFlag.AlignLeft)
+        self.scale_percentage_lable = QLabel("100%")
+        hbox2.addSpacing(1)
+        hbox2.addWidget(self.scale_percentage_lable, alignment=Qt.AlignmentFlag.AlignRight)
+        self.scaler.register_widget(self.scale_percentage_lable, font_size=14)
         self.scaler.register_widget(scale_lable, font_size=14)
-        layout.addWidget(scale_lable)
+        
+
 
         self.scale_slider = QSlider(Qt.Orientation.Horizontal)
         self.scale_slider.setRange(75, 150)
@@ -50,6 +70,7 @@ class SettingsMenu(QFrame):
     def on_scale_changed(self, value):
         scale = value / 100
         self.scaler.set_user_scale(scale)
+        self.scale_percentage_lable.setText(f"{int(scale * 100)}%")
         self.scaler.signals.scale_changed.emit()
     
 
