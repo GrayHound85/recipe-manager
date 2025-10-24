@@ -1,12 +1,14 @@
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
-    QScrollArea, QFrame, QSizePolicy
+    QScrollArea, QFrame, QSizePolicy, QLineEdit
 )
 from PyQt6.QtCore import Qt, pyqtSignal, QPoint
 from PyQt6.QtGui import QFont
 
 from ui.ui_scaler import Scaler
 from ui.settings import SettingsMenu, SettingsButton
+from ui.misc_buttons import BackButton
+from ui.recipe_editor.component_editor import ComponentEditor
 
 class RecipeEditor(QWidget):
     backendRequested = pyqtSignal()
@@ -48,14 +50,7 @@ class RecipeEditor(QWidget):
         center_layout.addWidget(self.sidebar)
 
         # --- Scrollable editor area --- #
-        self.scroll_area = QScrollArea()
-        self.scroll_area.setWidgetResizable(True)
-
-        self.content_widget = QWidget()
-        self.content_layout = QVBoxLayout(self.content_widget)
-        self.content_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
-        self.scroll_area.setWidget(self.content_widget)
-
+        self.scroll_area = self._create_scroll_area()
         center_layout.addWidget(self.scroll_area, 1)
 
         main_layout.addLayout(center_layout)
@@ -65,7 +60,7 @@ class RecipeEditor(QWidget):
     # ------------------------------------------------------------------- #
     #                         UI Components
     # ------------------------------------------------------------------- #
-    # ------ Top bar ------ #
+    # ------ Top bar ------ ------ #
     def _create_topbar(self):
         bar = QFrame()
         bar.setObjectName("TopBar")
@@ -79,12 +74,16 @@ class RecipeEditor(QWidget):
         layout = QHBoxLayout(bar)
         layout.setContentsMargins(10, 0, 10, 0)
         layout.setSpacing(5)
+        # ------ Backbutton ------ #
+        self.back_button = BackButton()
+        layout.addWidget(self.back_button)
 
-        title = QLabel("Orange Macrons")
+        # ------ Title ------ #
+        title = QLineEdit("Recipe title")
         title.setStyleSheet("color: white;")
         self.scaler.register_widget(title, font_size=18)
         layout.addWidget(title)
-        layout.addStretch()
+        layout.addStretch(1)
 
         # ------ Settings menu ------ #
         self.settings_menu = SettingsMenu(self)
@@ -110,6 +109,7 @@ class RecipeEditor(QWidget):
 
         return bar
     
+    # ------ More settings menu logic ------ #
     def reposition_settings_menu(self):
         if not self.settings_menu.isVisible():
             return
@@ -121,10 +121,11 @@ class RecipeEditor(QWidget):
         self.settings_menu.raise_()
 
     
-    # ------ Sidebar ------ #
+    # ------ Sidebar ------ ------ #
     def _create_sidebar(self):
         sidebar = QFrame()
         sidebar.setObjectName("Sidebar")
+        sidebar.setContentsMargins(10,10,10,10)
         self.scaler.register_widget(sidebar, width=250, height=None)
         sidebar.setStyleSheet("""
             QFrame#Sidebar {
@@ -134,3 +135,42 @@ class RecipeEditor(QWidget):
 
 
         return sidebar
+
+
+    # ------ Scroll area ------ ------ #
+    def _create_scroll_area(self):
+        scroll_area = QScrollArea()
+        scroll_area.setWidgetResizable(True)
+        scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        scroll_area.setStyleSheet("background-color: #2e2e2e;")
+
+        # ------ Content widget ------ #
+        content_widget = QWidget()
+        content_layout = QHBoxLayout(content_widget)
+        content_layout.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
+        content_layout.setContentsMargins(0, 20, 0, 20)
+        scroll_area.setWidget(content_widget)
+
+        # ------ Page ------ #
+        page_frame = QFrame()
+        page_frame.setFixedWidth(1000)
+        page_frame.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
+        page_frame.setObjectName("Page")
+        page_frame.setStyleSheet("""
+            QFrame#Page {
+                background-color: #383838;
+                border-radius: 8px;
+            }
+        """)
+        content_layout.addWidget(page_frame)
+
+        page_layout = QVBoxLayout(page_frame)
+        page_layout.setContentsMargins(20,20,20,20)
+        page_layout.setSpacing(10)
+        page_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+    
+        base_component_editor = ComponentEditor()
+        page_layout.addWidget(base_component_editor)
+        
+        return scroll_area
