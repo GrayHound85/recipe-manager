@@ -8,7 +8,7 @@ from PyQt6.QtGui import QFont
 from ui.ui_scaler import Scaler
 from ui.settings import SettingsMenu, SettingsButton
 from ui.misc_buttons import BackButton
-from ui.recipe_editor.component_editor import ComponentEditor
+from ui.recipe_editor.component_editor import ComponentEditor, ComponentManager
 
 class RecipeEditor(QWidget):
     backendRequested = pyqtSignal()
@@ -85,6 +85,14 @@ class RecipeEditor(QWidget):
         layout.addWidget(title)
         layout.addStretch(1)
 
+        # ------ Saving status label ------ #
+        self.saving_status_label = QLabel("Not saved")
+        self.saving_status_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.saving_status_label.setStyleSheet("color: #8a8a8a")
+        self.scaler.register_widget(self.saving_status_label, font_size=14)
+        layout.addWidget(self.saving_status_label)
+        layout.addStretch(1)
+
         # ------ Settings menu ------ #
         self.settings_menu = SettingsMenu(self)
         self.settings_button = SettingsButton(self.settings_menu, parent=bar)
@@ -125,13 +133,22 @@ class RecipeEditor(QWidget):
     def _create_sidebar(self):
         sidebar = QFrame()
         sidebar.setObjectName("Sidebar")
-        sidebar.setContentsMargins(10,10,10,10)
         self.scaler.register_widget(sidebar, width=250, height=None)
         sidebar.setStyleSheet("""
             QFrame#Sidebar {
                 background-color: #383838;
             }
         """)
+        # Create layouts
+        main_layout = QVBoxLayout(sidebar)
+        sidebar_scroll_area = QScrollArea()
+        sidebar_scroll_area.setContentsMargins(10,10,10,10)
+        sidebar_scroll_area.setStyleSheet("background: transparent; border: none")
+        main_layout.addWidget(sidebar_scroll_area)
+        layout = QVBoxLayout(sidebar_scroll_area)
+
+        component_manager = ComponentManager()
+        layout.addWidget(component_manager)
 
 
         return sidebar
