@@ -24,7 +24,9 @@ class RecipeEditor(QWidget):
         self.current_recipe_name: str = ""
         self.is_saved: bool = False
         self.scaler = Scaler()
+        self.component_manager = ComponentManager()
         self._setup_ui()
+        
     
             
     def connect_scale(self, update_func):
@@ -148,9 +150,7 @@ class RecipeEditor(QWidget):
         layout = QVBoxLayout(sidebar_scroll_area)
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
-        component_manager = ComponentManager()
-        layout.addWidget(component_manager)
-
+        layout.addWidget(self.component_manager)
 
         return sidebar
 
@@ -187,8 +187,20 @@ class RecipeEditor(QWidget):
         page_layout.setContentsMargins(20,20,20,20)
         page_layout.setSpacing(10)
         page_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+
+        # Component system
+        component_list = {}
+        id_counter = 0
+
+        def add_component():
+            nonlocal id_counter
+            component = ComponentEditor(id_counter)
+            component_list[id_counter] = component
+            id_counter += 1
+            page_layout.addWidget(component)
+
     
-        base_component_editor = ComponentEditor()
-        page_layout.addWidget(base_component_editor)
+        self.component_manager.addRequested.connect(add_component)
+
         
         return scroll_area

@@ -1,13 +1,14 @@
-from PyQt6.QtWidgets import QPushButton, QWidget, QFrame, QTextEdit, QVBoxLayout, QSizePolicy, QHBoxLayout, QLabel
+from PyQt6.QtWidgets import QPushButton, QWidget, QFrame, QTextEdit, QVBoxLayout, QSizePolicy, QHBoxLayout, QLabel, QLayout
 from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtGui import QFont, QIcon
 from ui.ui_scaler import Scaler
 
 class ComponentEditor(QWidget):
-    def __init__(self):
+    def __init__(self, component_id):
         super().__init__()
         layout = QVBoxLayout(self)
         
+        self._id = component_id
         self.text_edit = QTextEdit()
         self.text_edit.document().contentsChanged.connect(self.adjust_height)
         self.text_edit.setFixedHeight(45)
@@ -42,6 +43,7 @@ class ComponentManager(QWidget):
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         layout.setContentsMargins(15,5,15,5)
         layout.setSpacing(5)
+        layout.setSizeConstraint(QLayout.SizeConstraint.SetMinAndMaxSize)
         self.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Maximum)
 
         # Style manager
@@ -63,6 +65,22 @@ class ComponentManager(QWidget):
         self.scaler.register_widget(self.title_underline, height=2)
         layout.addWidget(self.title_underline)
 
+        self.component_list_container = QWidget()
+        self.component_list_layout = QVBoxLayout(self.component_list_container)
+        self.component_list_layout.setContentsMargins(0,0,0,0)
+        self.component_list_layout.setSpacing(5)
+        layout.addWidget(self.component_list_container)
+
+        # Add component button logic
+        def on_add_component():
+            self.addRequested.emit()
+
+        self.add_component_button = QPushButton()
+        self.add_component_button.setIcon(QIcon.fromTheme("preferences-system"))
+        self.add_component_button.clicked.connect(on_add_component)
+        layout.addWidget(self.add_component_button)
+
+
         
     
 class ComponentRow(QWidget):
@@ -80,7 +98,7 @@ class ComponentRow(QWidget):
         self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
         self.setObjectName("ComponentRow")
         self.setStyleSheet("""
-                           #ComponentManager {background: #404040; 
+                           #ComponentRow {background: #404040; 
                            border-radius: 10px;}
                            """)
 
