@@ -51,5 +51,3 @@ class Scaler:
     def update_all(self):
         for w, width, height, font_size in self._widgets:
             self.apply(w, width, height, font_size)
-
-

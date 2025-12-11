@@ -146,6 +146,7 @@ class RecipeEditor(QWidget):
         sidebar_scroll_area.setStyleSheet("background: transparent; border: none")
         main_layout.addWidget(sidebar_scroll_area)
         layout = QVBoxLayout(sidebar_scroll_area)
+        layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         component_manager = ComponentManager()
         layout.addWidget(component_manager)

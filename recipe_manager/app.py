@@ -7,7 +7,7 @@ app = QApplication(sys.argv)
 
 editor = RecipeEditor()
 editor.setWindowTitle("Recipe Manager")
-editor.setMinimumSize(1000, 600)
+editor.setMinimumSize(1400, 600)
 editor.show()
 
 sys.exit(app.exec())
