@@ -38,6 +38,8 @@ class ComponentManager(QWidget):
         super().__init__()
         self.scaler = Scaler()
 
+        self.component_rows = {}
+
         # Create layouts
         layout = QVBoxLayout(self)
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
@@ -65,6 +67,7 @@ class ComponentManager(QWidget):
         self.scaler.register_widget(self.title_underline, height=2)
         layout.addWidget(self.title_underline)
 
+        # Component row container
         self.component_list_container = QWidget()
         self.component_list_layout = QVBoxLayout(self.component_list_container)
         self.component_list_layout.setContentsMargins(0,0,0,0)
@@ -75,19 +78,36 @@ class ComponentManager(QWidget):
         def on_add_component():
             self.addRequested.emit()
 
+        
+
         self.add_component_button = QPushButton()
         self.add_component_button.setIcon(QIcon.fromTheme("preferences-system"))
         self.add_component_button.clicked.connect(on_add_component)
         layout.addWidget(self.add_component_button)
 
+    def on_component_added(self, id):
+        print(id)
+        new_row = ComponentRow(id)
+        self.component_list_layout.addWidget(new_row)
+
+        new_row.deleteRequested.connect(lambda: self.deleteRequested.emit(id))
+        self.component_rows[id] = new_row
+
+    def on_component_deleted(self, id):
+        if id in self.component_rows.keys():
+            row = self.component_rows.pop(id)
+            self.component_list_layout.removeWidget(row)
+
 
         
     
 class ComponentRow(QWidget):
-    def __init__(self):
+    deleteRequested =pyqtSignal()
+
+    def __init__(self, id):
         super().__init__()
 
-        self._id = -1
+        self._id = id
         self.scaler = Scaler()
 
         layout = QHBoxLayout(self)
@@ -103,8 +123,10 @@ class ComponentRow(QWidget):
                            """)
 
         self.comp_name_label = QLabel("Temp name")
-        self.comp_name_label.setSizePolicy(QSizePolicy.Policy.Maximum)
+        self.comp_name_label.setSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Preferred)
         self.delete_comp_button = QPushButton() 
+        self.delete_comp_button.setIcon(QIcon.fromTheme("preferences-system"))
+        self.delete_comp_button.clicked.connect(lambda: self.deleteRequested.emit())
         layout.addWidget(self.comp_name_label)
         layout.addWidget(self.delete_comp_button)
 

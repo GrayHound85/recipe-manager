@@ -14,9 +14,8 @@ class RecipeEditor(QWidget):
     backendRequested = pyqtSignal()
     saveRequested = pyqtSignal()
 
-    addComponentRequested = pyqtSignal()
-    addStepRequested = pyqtSignal()
-    insertImageRequested = pyqtSignal()
+    componentAdded = pyqtSignal(int)
+    componentDeleted = pyqtSignal(int)
 
 
     def __init__(self, parent = None):
@@ -24,7 +23,15 @@ class RecipeEditor(QWidget):
         self.current_recipe_name: str = ""
         self.is_saved: bool = False
         self.scaler = Scaler()
+
+        # Component system
         self.component_manager = ComponentManager()
+        self.componentAdded.connect(self.component_manager.on_component_added)
+        self.componentDeleted.connect(self.component_manager.on_component_deleted)
+        self.component_list = {}
+        self.id_counter = 0
+
+        # UI setup
         self._setup_ui()
         
     
@@ -189,18 +196,23 @@ class RecipeEditor(QWidget):
         page_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         # Component system
-        component_list = {}
-        id_counter = 0
-
         def add_component():
-            nonlocal id_counter
-            component = ComponentEditor(id_counter)
-            component_list[id_counter] = component
-            id_counter += 1
+            component = ComponentEditor(self.id_counter)
+            self.component_list[self.id_counter] = component
             page_layout.addWidget(component)
+            print(f"A component was added with ID: {self.id_counter}")
+            self.componentAdded.emit(self.id_counter)
+            self.id_counter += 1
+        
+        def delete_component(id):
+            if id in self.component_list.keys():
+                component = self.component_list.pop(id)
+                page_layout.removeWidget(component)
 
+            self.componentDeleted.emit(id)
     
         self.component_manager.addRequested.connect(add_component)
+        self.component_manager.deleteRequested.connect(delete_component)
 
         
         return scroll_area
