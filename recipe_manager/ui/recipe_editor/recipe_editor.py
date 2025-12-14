@@ -196,23 +196,36 @@ class RecipeEditor(QWidget):
         page_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         # Component system
-        def add_component():
+        def _add_component():
             component = ComponentEditor(self.id_counter)
             self.component_list[self.id_counter] = component
             page_layout.addWidget(component)
             print(f"A component was added with ID: {self.id_counter}")
             self.componentAdded.emit(self.id_counter)
+            component.titleChanged.connect(_on_component_title_changed)
             self.id_counter += 1
         
-        def delete_component(id):
+        def _delete_component(id):
             if id in self.component_list.keys():
                 component = self.component_list.pop(id)
                 page_layout.removeWidget(component)
 
             self.componentDeleted.emit(id)
-    
-        self.component_manager.addRequested.connect(add_component)
-        self.component_manager.deleteRequested.connect(delete_component)
-
         
+        def _on_rename_component(component_id, new_text):
+            if component_id in self.component_list:
+                component = self.component_list[component_id]
+                component.component_title.blockSignals(True)
+                component.component_title.setText(new_text)
+                component.component_title.blockSignals(False)
+
+        def _on_component_title_changed(component_id, new_text):
+            self.component_manager.update_row_label(component_id, new_text)
+        
+        self.component_manager.addRequested.connect(_add_component)
+        self.component_manager.deleteRequested.connect(_delete_component)
+        self.component_manager.renameRequested.connect(_on_rename_component)
+
+
         return scroll_area
+
